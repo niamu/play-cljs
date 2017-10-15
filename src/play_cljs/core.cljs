@@ -367,7 +367,7 @@ A tiled map with the provided name must already be loaded
 
 (defn create-game
   "Returns a game object."
-  [width height]
+  [width height & [parent]]
   (let [^js/p5 renderer (js/p5. (fn [_]))
         hidden-state-atom (atom {:screen nil
                                  :canvas nil
@@ -383,7 +383,9 @@ A tiled map with the provided name must already be loaded
         (set! (.-setup renderer)
           (fn []
             ; create the canvas
-            (let [^js/p5 canvas-wrapper (.createCanvas renderer width height)
+            (let [^js/p5 canvas-wrapper (cond-> (.createCanvas renderer
+                                                               width height)
+                                          parent (.parent parent))
                   canvas (.-canvas canvas-wrapper)]
               (.removeAttribute canvas "style")
               (swap! hidden-state-atom assoc :canvas canvas))
