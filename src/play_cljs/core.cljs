@@ -7,20 +7,20 @@
 
 (defprotocol Screen
   "A screen object provides the basic lifecycle for a game.
-Simple games may only need to have one screen. They are a useful way to
-isolate different aspects of your game. For example, you could make one
-screen display the title and menu, and another screen contain the game
-itself.
+  Simple games may only need to have one screen. They are a useful way to
+  isolate different aspects of your game. For example, you could make one
+  screen display the title and menu, and another screen contain the game
+  itself.
 
-You can create a screen by using `reify` like this:
+  You can create a screen by using `reify` like this:
 
-```
-(def main-screen
+  ```
+  (def main-screen
   (reify p/Screen
     (on-show [this])
     (on-hide [this])
     (on-render [this])))
-```"
+  ```"
   (on-show [this]
     "Runs once, when the screen first appears.")
   (on-hide [this]
@@ -30,14 +30,15 @@ You can create a screen by using `reify` like this:
 
 (defprotocol Game
   "A game object contains the internal renderer object and various bits of state
-that are important to the overall execution of the game. Every play-cljs game
-should create just one such object by calling [create-game](#create-game)."
+  that are important to the overall execution of the game. Every play-cljs game
+  should create just one such object by calling [create-game](#create-game)."
   (start [game]
     "Creates the canvas element.")
   (render [game content]
     "Renders the provided data structure.")
   (pre-render [game image-name width height content]
-    "Renders the provided data structure off-screen and associates it with the given name. Returns an [Image](#Image) object.")
+    "Renders the provided data structure off-screen and associates it with the
+given name. Returns an [Image](#Image) object.")
   (load-image [game path]
     "Loads an image. Returns an [Image](#Image) object.")
   (load-tiled-map [game map-name]
@@ -53,11 +54,13 @@ A tiled map with the provided name must already be loaded
   (get-canvas [game]
     "Returns the internal canvas object.")
   (get-total-time [game]
-    "Returns the total time transpired since the game started, in milliseconds.")
+    "Returns the total time transpired since the game started,
+in milliseconds.")
   (get-delta-time [game]
     "Returns the time since the last frame was rendered, in milliseconds.")
   (get-pressed-keys [game]
-    "Returns a set containing the key codes for the keys currently being pressed.")
+    "Returns a set containing the key codes for the keys
+currently being pressed.")
   (get-width [game]
     "Returns the virtual width of the game.")
   (get-height [game]
@@ -67,7 +70,7 @@ A tiled map with the provided name must already be loaded
   (get-asset [game name]
     "Gets the asset with the given name."))
 
-;(set! *warn-on-infer* true)
+#_(set! *warn-on-infer* true)
 
 (set! (.-disableFriendlyErrors ^js/p5 js/p5) true)
 
@@ -78,19 +81,37 @@ A tiled map with the provided name must already be loaded
         (update :y + (:y parent-opts)))))
 
 (def ^:const basic-defaults {:x 0 :y 0 :scale-x 1 :scale-y 1})
-(def ^:const text-defaults (merge basic-defaults {:size 32 :font "Helvetica" :halign :left :valign :baseline :leading 0 :style :normal}))
+(def ^:const text-defaults (merge basic-defaults {:size 32
+                                                  :font "Helvetica"
+                                                  :halign :left
+                                                  :valign :baseline
+                                                  :leading 0
+                                                  :style :normal}))
 (def ^:const img-defaults (merge basic-defaults {:sx 0 :sy 0}))
-(def ^:const rgb-defaults (merge basic-defaults {:max-r 255 :max-g 255 :max-b 255 :max-a 1}))
-(def ^:const hsb-defaults (merge basic-defaults {:max-h 360 :max-s 100 :max-b 100 :max-a 1}))
+(def ^:const rgb-defaults (merge basic-defaults {:max-r 255
+                                                 :max-g 255
+                                                 :max-b 255
+                                                 :max-a 1}))
+(def ^:const hsb-defaults (merge basic-defaults {:max-h 360
+                                                 :max-s 100
+                                                 :max-b 100
+                                                 :max-a 1}))
 
 (defn halign->constant [^js/p5 renderer halign]
-  (get {:left (.-LEFT renderer) :center (.-CENTER renderer) :right (.-RIGHT renderer)} halign))
+  (get {:left (.-LEFT renderer)
+        :center (.-CENTER renderer)
+        :right (.-RIGHT renderer)} halign))
 
 (defn valign->constant [^js/p5 renderer valign]
-  (get {:top (.-TOP renderer) :center (.-CENTER renderer) :bottom (.-BOTTOM renderer) :baseline (.-BASELINE renderer)} valign))
+  (get {:top (.-TOP renderer)
+        :center (.-CENTER renderer)
+        :bottom (.-BOTTOM renderer)
+        :baseline (.-BASELINE renderer)} valign))
 
 (defn style->constant [^js/p5 renderer style]
-  (get {:normal (.-NORMAL renderer) :italic (.-ITALIC renderer) :bold (.-BOLD renderer)} style))
+  (get {:normal (.-NORMAL renderer)
+        :italic (.-ITALIC renderer)
+        :bold (.-BOLD renderer)} style))
 
 (defmulti draw-sketch! (fn [game ^js/p5 renderer content parent-opts]
                          (first content)))
@@ -107,7 +128,8 @@ A tiled map with the provided name must already be loaded
     (doto renderer
       (.textSize size)
       (.textFont font)
-      (.textAlign (halign->constant renderer halign) (valign->constant renderer valign))
+      (.textAlign (halign->constant renderer halign)
+                  (valign->constant renderer valign))
       (.textLeading leading)
       (.textStyle (style->constant renderer style))
       (.text value x y))
@@ -185,7 +207,8 @@ A tiled map with the provided name must already be loaded
 
 (defmethod draw-sketch! :image [game ^js/p5 renderer content parent-opts]
   (let [[command opts & children] content
-        {:keys [value name x y width height sx sy swidth sheight scale-x scale-y flip-x flip-y]
+        {:keys [value name x y width height sx sy swidth sheight
+                scale-x scale-y flip-x flip-y]
          :as opts} (update-opts opts parent-opts img-defaults)
         ^js/p5.Image value (or value
                                (get-asset game name)
@@ -202,14 +225,15 @@ A tiled map with the provided name must already be loaded
       (.scale renderer 1 -1)
       (.translate renderer 0 (- sheight)))
     (.image renderer value
-      0 0 (or width swidth) (or height sheight)
-      sx sy swidth sheight)
+            0 0 (or width swidth) (or height sheight)
+            sx sy swidth sheight)
     (draw-sketch! game renderer children opts)
     (.pop renderer)))
 
 (defmethod draw-sketch! :animation [game ^js/p5 renderer content parent-opts]
   (let [[command opts & children] content
-        {:keys [duration] :as opts} (update-opts opts parent-opts basic-defaults)
+        {:keys [duration] :as opts} (update-opts opts parent-opts
+                                                 basic-defaults)
         images (vec children)
         cycle-time (mod (get-total-time game) (* duration (count images)))
         index (int (/ cycle-time duration))
@@ -331,13 +355,14 @@ A tiled map with the provided name must already be loaded
         opts (update-opts opts parent-opts basic-defaults)
         points (:points opts)]
     (cond (odd? (count points))
-          (throw ":shape requires :points to contain a seq'able with an even number of values (x and y pairs)")
+          (throw (str ":shape requires :points to contain a seq'able "
+                      "with an even number of values (x and y pairs)"))
           :else
           (do (.beginShape renderer)
               (loop [[x y & rest] points]
-                    (.vertex renderer x y)
-                    (when rest
-                      (recur rest)))
+                (.vertex renderer x y)
+                (when rest
+                  (recur rest)))
               (draw-sketch! game renderer children opts)
               (.endShape renderer (.-CLOSE renderer))))))
 
@@ -346,13 +371,14 @@ A tiled map with the provided name must already be loaded
         opts (update-opts opts parent-opts basic-defaults)
         points (:points opts)]
     (cond (odd? (count points))
-          (throw ":contour requires :points to contain a seq'able with an even number of values (x and y pairs)")
+          (throw ":contour requires :points to contain a seq'able "
+                 "with an even number of values (x and y pairs)")
           :else
           (do (.beginContour renderer)
               (loop [[x y & rest] points]
-                    (.vertex renderer x y)
-                    (when rest
-                      (recur rest)))
+                (.vertex renderer x y)
+                (when rest
+                  (recur rest)))
               (draw-sketch! game renderer children opts)
               (.endContour renderer (.-CLOSE renderer))))))
 
@@ -381,29 +407,35 @@ A tiled map with the provided name must already be loaded
     (reify Game
       (start [this]
         (set! (.-setup renderer)
-          (fn []
-            ; create the canvas
-            (let [^js/p5 canvas-wrapper (cond-> (.createCanvas renderer
-                                                               width height)
-                                          parent (.parent parent))
-                  canvas (.-canvas canvas-wrapper)]
-              (.removeAttribute canvas "style")
-              (swap! hidden-state-atom assoc :canvas canvas))
-            ; allow on-show to be run
-            (put! setup-finished? true)))
-        ; keep track of pressed keys
+              (fn []
+                ;; create the canvas
+                (let [^js/p5 canvas-wrapper (cond-> (.createCanvas renderer
+                                                                   width height)
+                                              parent (.parent parent))
+                      canvas (.-canvas canvas-wrapper)]
+                  (.removeAttribute canvas "style")
+                  (swap! hidden-state-atom assoc :canvas canvas))
+                ;; allow on-show to be run
+                (put! setup-finished? true)))
+        ;; keep track of pressed keys
         (run! events/unlistenByKey (:listeners @hidden-state-atom))
         (swap! hidden-state-atom assoc :listeners
-          [(events/listen js/window "keydown"
-             (fn [^js/KeyboardEvent e]
-               (swap! hidden-state-atom update :pressed-keys conj (.-keyCode e))))
-           (events/listen js/window "keyup"
-             (fn [^js/KeyboardEvent e]
-               (if (contains? #{91 93} (.-keyCode e))
-                 (swap! hidden-state-atom assoc :pressed-keys #{})
-                 (swap! hidden-state-atom update :pressed-keys disj (.-keyCode e)))))
-           (events/listen js/window "blur"
-             #(swap! hidden-state-atom assoc :pressed-keys #{}))]))
+               [(events/listen js/window "keydown"
+                               (fn [^js/KeyboardEvent e]
+                                 (swap! hidden-state-atom
+                                        update :pressed-keys
+                                        conj (.-keyCode e))))
+                (events/listen js/window "keyup"
+                               (fn [^js/KeyboardEvent e]
+                                 (if (contains? #{91 93} (.-keyCode e))
+                                   (swap! hidden-state-atom
+                                          assoc :pressed-keys #{})
+                                   (swap! hidden-state-atom
+                                          update :pressed-keys
+                                          disj (.-keyCode e)))))
+                (events/listen js/window "blur"
+                               #(swap! hidden-state-atom
+                                       assoc :pressed-keys #{}))]))
       (render [this content]
         (draw-sketch! this renderer content {}))
       (pre-render [this image-name width height content]
@@ -420,34 +452,36 @@ A tiled map with the provided name must already be loaded
       (load-tiled-map [this map-name]
         (let [finished-loading? (promise-chan)
               _ (swap! preloads conj finished-loading?)
-              object (.loadTiledMap renderer map-name #(put! finished-loading? true))]
+              object (.loadTiledMap renderer map-name
+                                    #(put! finished-loading? true))]
           (swap! hidden-state-atom update :assets assoc map-name object)
           object))
       (get-screen [this]
         (:screen @hidden-state-atom))
       (set-screen [this screen]
         (go
-          ; wait for the setup function to finish
+          ;; wait for the setup function to finish
           (<! setup-finished?)
-          ; change the screens
+          ;; change the screens
           (some-> (get-screen this) on-hide)
           (swap! hidden-state-atom assoc :screen screen)
           (on-show screen)
-          ; wait for any assets from on-show to finish loading
+          ;; wait for any assets from on-show to finish loading
           (doseq [finished-loading? @preloads]
             (<! finished-loading?))
           (reset! preloads [])
-          ; set the draw function
+          ;; set the draw function
           (set! (.-draw renderer)
-            (fn []
-              (swap! hidden-state-atom
-                (fn [hidden-state]
-                  (let [time (.millis renderer)]
-                    (assoc hidden-state
-                      :total-time time
-                      :delta-time (- time (:total-time hidden-state))))))
-              (.clear renderer)
-              (on-render screen)))))
+                (fn []
+                  (swap! hidden-state-atom
+                         (fn [hidden-state]
+                           (let [time (.millis renderer)]
+                             (assoc hidden-state
+                                    :total-time time
+                                    :delta-time (- time (get hidden-state
+                                                             :total-time))))))
+                  (.clear renderer)
+                  (on-render screen)))))
       (get-renderer [this]
         renderer)
       (get-canvas [this]
